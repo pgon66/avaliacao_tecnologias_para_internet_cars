@@ -63,3 +63,4 @@ INSERT INTO sells (id_seller,id_buyer,id_car) VALUES
 (1,2,2),
 (2,1,3),
 (1,2,4);
+

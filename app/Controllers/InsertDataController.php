@@ -4,29 +4,54 @@ namespace App\Controllers;
 
 use App\FrameworkTools\Abstracts\Controllers\AbstractControllers;
 
-use App\FrameworkTools\Database\DatabaseConnection;
-
-
 class InsertDataController extends AbstractControllers{
 
-    public function getCar() {
-        $pdo = DatabaseConnection::start()->getPDO();
-        $params = $this->processServerElements->getInputJSONData();
+    private $params;
+    private $attrName;
 
-        $query = "SELECT * FROM car";
+    public function exec() {
+
+        try {
+
+            $response = ['success'=> true];
+
+            $this->params = $this->processServerElements->getInputJSONData();
+    
+            $this->verificationInputVar();
+    
+            $query = "INSERT INTO car (carName,model) VALUES (:carName,:model)";
+            
+            $statement = $this->pdo->prepare($query); 
+                        
+            $statement->execute([
+                ':carName' => $this->params["carName"],
+                ':model' => $this->params["model"]
+            ]);
+
+        } catch (\Exception $e) {
+            $response = [
+                'success' => false,
+                'message' => $e->getMessage(),
+                'missingAttribute' => $this->attrName
+            ];
+        }
+
+        view($response);
+
+    }
+
+    private function verificationInputVar() {
         
-        $statement = $pdo->prepare($query);
+        if (!$this->params['carName']) {
+            $this->attrName = 'carName';
+            throw new \Exception('the carName has to ben send in the request');
+        }
 
-        $statement->execute([
-            ':name' => $params["name"],
-            ':car_model' => $params["car_model"],
-            ':year' => $params["year"],
-            ':motorization' => $params["motorization"]
-        ]);
+        if (!$this->params['model']) {
+            $this->attrName = 'model';
+            throw new \Exception('the model has to be send in the request');
+        }
 
-        view([
-            'success'=> true
-        ]);
     }
 
 }
